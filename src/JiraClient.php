@@ -187,7 +187,7 @@ class JiraClient
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_URL, $url);
 
-        if ($this->requestMethod) {
+        if ($this->requestMethod == 'get') {
         	$post_data = json_decode($post_data, true);
 	        $url .= '?startIndex='.$post_data['startAt'].'&maxResults='.$post_data['maxResults'].'&jql='.$post_data['jql'].'';
 	        if ($post_data['fields']) {
