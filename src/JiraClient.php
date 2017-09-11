@@ -53,6 +53,12 @@ class JiraClient
      * @var ConfigurationInterface
      */
     protected $configuration;
+    
+    /**
+     * Old JIRAs requires user agent to work.
+     * You can set it for better compatibility
+     */
+    protected $userAgent = null;
 
     /**
      * Constructor.
@@ -89,6 +95,11 @@ class JiraClient
         }
 
         $this->http_response = 200;
+    }
+    
+    public function setUserAgent($agent)
+    {
+        $this->userAgent = $agent;
     }
 
     /**
@@ -199,8 +210,10 @@ class JiraClient
 
         curl_setopt($ch, CURLOPT_VERBOSE, $this->getConfiguration()->isCurlOptVerbose());
         
-        curl_setopt($ch,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
-
+        if ($this->userAgent) {
+            curl_setopt($ch, CURLOPT_USERAGENT, $this->userAgent);
+        }
+        
         $this->log->addDebug('Curl exec='.$url);
         $response = curl_exec($ch);
 
