@@ -59,6 +59,8 @@ class JiraClient
      * You can set it for better compatibility
      */
     protected $userAgent = null;
+    
+    protected $requestMethod = 'post';
 
     /**
      * Constructor.
@@ -158,6 +160,11 @@ class JiraClient
 
         return $haystack;
     }
+    
+    public function setRequestMethod($method)
+    {
+        $this->requestMethod = trim(strtolower($method));
+    }
 
     /**
      * Execute REST request.
@@ -180,19 +187,29 @@ class JiraClient
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_URL, $url);
 
-        // post_data
-        if (!is_null($post_data)) {
-            // PUT REQUEST
-            if (!is_null($custom_request) && $custom_request == 'PUT') {
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
-            }
-            if (!is_null($custom_request) && $custom_request == 'DELETE') {
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-            } else {
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
-            }
+        if ($this->requestMethod) {
+        	$post_data = json_decode($post_data, true);
+	        $url .= '?startIndex='.$post_data['startAt'].'&maxResults='.$post_data['maxResults'].'&jql='.$post_data['jql'].'';
+	        if ($post_data['fields']) {
+	            $url .= '&fields='.implode(',', $post_data['fields']);
+	        }
+            curl_setopt($ch, CURLOPT_URL, $url);
+        } else {
+            curl_setopt($ch, CURLOPT_URL, $url);
+	        // post_data
+	        if (!is_null($post_data)) {
+	            // PUT REQUEST
+	            if (!is_null($custom_request) && $custom_request == 'PUT') {
+	                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+	                curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+	            }
+	            if (!is_null($custom_request) && $custom_request == 'DELETE') {
+	                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+	            } else {
+	                curl_setopt($ch, CURLOPT_POST, true);
+	                curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+	            }
+	        }
         }
 
         $this->authorization($ch);
